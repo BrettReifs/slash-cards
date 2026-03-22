@@ -9,13 +9,15 @@ interface HomeScreenProps {
   commands: SlashCommand[];
   visibleCommands: SlashCommand[];
   onOpenDocs?: (url: string) => void;
+  onDiscoverCommands?: () => Promise<void> | void;
 }
 
-export function HomeScreen({ visibleCommands, onOpenDocs }: HomeScreenProps) {
+export function HomeScreen({ visibleCommands, onOpenDocs, onDiscoverCommands }: HomeScreenProps) {
   const [tab, setTab] = useState<StackTab>("pick");
   const [preset, setPreset] = useState<StackPreset>("slash");
   const [viewerCards, setViewerCards] = useState<SlashCommand[] | null>(null);
   const [showFinished, setShowFinished] = useState(false);
+  const [isDiscovering, setIsDiscovering] = useState(false);
 
   const slashCommands = useMemo(
     () => visibleCommands.filter((c) => c.command.startsWith("/")),
@@ -33,11 +35,27 @@ export function HomeScreen({ visibleCommands, onOpenDocs }: HomeScreenProps) {
     return visibleCommands;
   }, [preset, slashCommands, atCommands, visibleCommands]);
 
-  const generate = () => {
+  const canGenerate = preset === "at" || presetCards.length > 0;
+
+  const generate = async () => {
+    if (preset === "at" && atCommands.length === 0) {
+      setIsDiscovering(true);
+      await onDiscoverCommands?.();
+      return;
+    }
     if (presetCards.length === 0) return;
     setViewerCards(presetCards);
     setShowFinished(false);
   };
+
+  // When atCommands appear after discovery, auto-open the viewer
+  const prevAtCountRef = useMemo(() => ({ current: atCommands.length }), []);
+  if (isDiscovering && atCommands.length > 0 && atCommands.length !== prevAtCountRef.current) {
+    prevAtCountRef.current = atCommands.length;
+    setIsDiscovering(false);
+    setViewerCards(atCommands);
+    setShowFinished(false);
+  }
 
   const handleFinish = () => {
     setViewerCards(null);
@@ -47,6 +65,13 @@ export function HomeScreen({ visibleCommands, onOpenDocs }: HomeScreenProps) {
   const handleNewStack = () => {
     setShowFinished(false);
     setViewerCards(null);
+  };
+
+  const handleDiscover = () => {
+    setIsDiscovering(true);
+    void Promise.resolve(onDiscoverCommands?.()).finally(() => {
+      setIsDiscovering(false);
+    });
   };
 
   if (viewerCards && viewerCards.length > 0) {
@@ -77,21 +102,32 @@ export function HomeScreen({ visibleCommands, onOpenDocs }: HomeScreenProps) {
     <section className="home-screen">
       <h1 className="home-screen__title">Create F/<span className="home-screen__at">@</span>shcards</h1>
 
-      <div className="home-screen__tabs">
+      <div className="home-screen__controls">
         <button
           type="button"
-          className={`home-tab${tab === "pick" ? " home-tab--active" : ""}`}
-          onClick={() => setTab("pick")}
+          className="home-discover tap-target"
+          onClick={handleDiscover}
+          disabled={isDiscovering}
         >
-          Pick Stack
+          {isDiscovering ? "Refreshing..." : "Discover"}
         </button>
-        <button
-          type="button"
-          className={`home-tab${tab === "make" ? " home-tab--active" : ""}`}
-          onClick={() => setTab("make")}
-        >
-          Make Stack
-        </button>
+
+        <div className="home-screen__tabs">
+          <button
+            type="button"
+            className={`home-tab${tab === "pick" ? " home-tab--active" : ""}`}
+            onClick={() => setTab("pick")}
+          >
+            Pick Stack
+          </button>
+          <button
+            type="button"
+            className={`home-tab${tab === "make" ? " home-tab--active" : ""}`}
+            onClick={() => setTab("make")}
+          >
+            Make Stack
+          </button>
+        </div>
       </div>
 
       {tab === "pick" ? (
@@ -130,16 +166,16 @@ export function HomeScreen({ visibleCommands, onOpenDocs }: HomeScreenProps) {
             type="button"
             className="home-generate tap-target"
             onClick={generate}
-            disabled={presetCards.length === 0}
+            disabled={!canGenerate || isDiscovering}
           >
-            Generate flashcards
+            {isDiscovering ? "Discovering participants…" : preset === "at" && atCommands.length === 0 ? "Discover @participants" : "Generate flashcards"}
           </button>
         </div>
       ) : (
         <div className="home-screen__make">
           <textarea
             className="home-make__input"
-            placeholder={"Describe a topic Claude will generate the details...\n\ne.g. capitals of the world\ne.g. fun facts about San Diego"}
+            placeholder={"Describe a topic. GitHub Copilot will generate the cards for you.\n\nExample: \"Commands to manage pull requests in GitHub\""}
             rows={6}
             disabled
           />

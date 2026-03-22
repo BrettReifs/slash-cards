@@ -62,6 +62,20 @@ export function DeckBrowser({
   return (
     <section className="deck-browser">
       <div className="panel panel--toolbar">
+        <label className="search-field search-field--hero">
+          <span className="search-field__label search-field__label--sr-only">Search</span>
+          <input
+            className="search-input search-input--hero tap-target"
+            type="search"
+            value={filters.search}
+            placeholder="Search cards"
+            aria-label="Search command cards"
+            onChange={(event) =>
+              onFiltersChange({ search: event.currentTarget.value })
+            }
+          />
+        </label>
+
         <div className="toolbar-grid">
           <details className="filter-menu">
             <summary className="toolbar-button tap-target">
@@ -80,20 +94,6 @@ export function DeckBrowser({
               ))}
             </div>
           </details>
-
-          <label className="search-field">
-            <span className="search-field__label search-field__label--sr-only">Search</span>
-            <input
-              className="search-input tap-target"
-              type="search"
-              value={filters.search}
-              placeholder="Search cards"
-              aria-label="Search command cards"
-              onChange={(event) =>
-                onFiltersChange({ search: event.currentTarget.value })
-              }
-            />
-          </label>
 
           <label className="search-field">
             <span className="search-field__label search-field__label--sr-only">Sort</span>

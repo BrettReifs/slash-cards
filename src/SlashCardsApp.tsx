@@ -31,6 +31,9 @@ const APP_INFO = {
 };
 
 const APP_CAPABILITIES: McpUiAppCapabilities = {
+  tools: {
+    listChanged: true,
+  },
   availableDisplayModes: ["inline", "fullscreen", "pip"],
 };
 
@@ -437,6 +440,46 @@ export function SlashCardsApp() {
     setFilters((current) => ({ ...current, ...next }));
   }, []);
 
+  const refreshBuiltInCommands = useCallback(async () => {
+    setLoadingMessage("Refreshing built-in commands from the active workspace…");
+    setAppError(null);
+
+    if (isStandalonePreview || !app || !isConnected) {
+      setCommands(COMMANDS);
+      setLoadingMessage("");
+      return;
+    }
+
+    try {
+      const result = await app.callServerTool({ name: "refresh-commands" });
+
+      if (result.isError) {
+        setAppError(
+          extractTextContent(result.content) ||
+            "Unable to refresh built-in commands from the workspace."
+        );
+        return;
+      }
+
+      const nextCommands = extractStructuredCommands(
+        result.structuredContent,
+        result.content
+      );
+
+      if (nextCommands.length > 0) {
+        setCommands(nextCommands);
+      }
+
+      setLoadingMessage("");
+    } catch (refreshError) {
+      setAppError(
+        refreshError instanceof Error
+          ? refreshError.message
+          : "Unable to refresh built-in commands from the workspace."
+      );
+    }
+  }, [app, isConnected, isStandalonePreview]);
+
   const openDocs = useCallback(
     async (rawUrl: string) => {
       const url = canonicalizeDocUrl(rawUrl);
@@ -498,6 +541,7 @@ export function SlashCardsApp() {
                 commands={commands}
                 visibleCommands={visibleCommands}
                 onOpenDocs={openDocs}
+                onDiscoverCommands={refreshBuiltInCommands}
               />
               <DeckBrowser
                 commands={commands}

@@ -220,6 +220,38 @@ function registerUiFeatures(server: McpServer): void {
       };
     },
   );
+  registerAppTool(
+    server,
+    "discover-participants",
+    {
+      title: "Discover Participants",
+      description: "Retrieve @ participant commands available in the current workspace context.",
+      _meta: {
+        ui: {
+          resourceUri: RESOURCE_URI,
+          visibility: ["model", "app"],
+        },
+      },
+    },
+    async () => {
+      const participants = COMMANDS.filter(
+        (command) => command.command.startsWith("@"),
+      );
+      const structuredContent: SlashCardsContent = { commands: participants };
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: participants.length > 0
+              ? `Found ${participants.length} @ participant${participants.length === 1 ? "" : "s"}: ${participants.map((p) => p.command).join(", ")}`
+              : "No @ participants found in the command catalog.",
+          },
+        ],
+        structuredContent,
+      };
+    },
+  );
 }
 
 export function createServer(): McpServer {

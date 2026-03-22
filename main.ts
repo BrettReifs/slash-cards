@@ -4,7 +4,10 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import cors from "cors";
 import type { Request, Response } from "express";
+import path from "node:path";
 import { createServer } from "./server.js";
+
+const DIST_DIR = path.join(import.meta.dirname, "dist");
 
 /**
  * Starts an MCP server with Streamable HTTP transport in stateless mode.
@@ -18,6 +21,11 @@ export async function startStreamableHTTPServer(
 
   const app = createMcpExpressApp({ host: "0.0.0.0" });
   app.use(cors());
+
+  // Serve the built UI for browser preview
+  app.get("/", (_req: Request, res: Response) => {
+    res.sendFile(path.join(DIST_DIR, "mcp-app.html"));
+  });
 
   app.all("/mcp", async (req: Request, res: Response) => {
     const server = createServerInstance();
