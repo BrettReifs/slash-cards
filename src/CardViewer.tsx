@@ -91,49 +91,32 @@ export function CardViewer({ cards, onFinish, onOpenDocs }: CardViewerProps) {
 
             <article className="card-viewer__face card-viewer__face--back">
               <div className="card-viewer__back-content">
-                <div className="card-viewer__back-header">
-                  <span className="flash-card__command flash-card__command--small">{card.command}</span>
-                  <span className={`platform-pill platform-pill--${tone}`}>
-                    {PLATFORM_LABELS[card.platform] ?? card.platform}
-                  </span>
-                </div>
+                <div className="card-viewer__primary">
+                  <p className="flash-card__description">
+                    <strong>{card.description}</strong>
+                  </p>
 
-                <p className="flash-card__description">
-                  <strong>{card.description}</strong>
-                </p>
+                  <p className="flash-card__when">
+                    {card.whenToUse || "Use this when you want a fast reference for the command."}
+                  </p>
+                </div>
 
                 {card.aliases.length > 0 ? (
                   <p className="flash-card__aliases">Aliases: {card.aliases.join(", ")}</p>
                 ) : null}
 
-                <div className="pill-row">
-                  <span className="category-pill">{card.category}</span>
-                  {releaseLabel ? (
-                    <span className={`flash-card__release-badge ${card.isNew ? "flash-card__release-badge--new" : "flash-card__release-badge--updated"}`}>
-                      {releaseLabel}
-                    </span>
-                  ) : null}
-                </div>
-
                 <section className="flash-card__section">
-                  <h3 className="section-title">When to use</h3>
-                  <p>{card.whenToUse || "Use this when you want a fast reference for the command."}</p>
-                </section>
-
-                <section className="flash-card__section">
-                  <h3 className="section-title">Example</h3>
                   <pre className="code-block"><code>{card.example || card.command}</code></pre>
                 </section>
 
                 {card.behavior ? (
                   <section className="flash-card__section">
-                    <h3 className="section-title">Behavior notes</h3>
                     <p>{card.behavior}</p>
                   </section>
                 ) : null}
 
-                {card.docUrl ? (
-                  <div className="card-viewer__back-footer">
+                <div className="card-viewer__back-footer">
+                  {card.docUrl ? (
                     <button
                       type="button"
                       className={`platform-pill platform-pill--${tone} platform-pill--link`}
@@ -145,8 +128,18 @@ export function CardViewer({ cards, onFinish, onOpenDocs }: CardViewerProps) {
                       {PLATFORM_LABELS[card.platform] ?? card.platform}
                       <span className="pill-link-icon" aria-hidden="true">&#8599;</span>
                     </button>
-                  </div>
-                ) : null}
+                  ) : (
+                    <span className={`platform-pill platform-pill--${tone}`}>
+                      {PLATFORM_LABELS[card.platform] ?? card.platform}
+                    </span>
+                  )}
+                  <span className="category-pill">{card.category}</span>
+                  {releaseLabel ? (
+                    <span className={`flash-card__release-badge ${card.isNew ? "flash-card__release-badge--new" : "flash-card__release-badge--updated"}`}>
+                      {releaseLabel}
+                    </span>
+                  ) : null}
+                </div>
               </div>
             </article>
           </div>

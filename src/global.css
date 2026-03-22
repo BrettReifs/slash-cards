@@ -778,6 +778,17 @@ pre {
   font-size: 0.98rem;
 }
 
+.flash-card__description {
+  font-size: clamp(1.16rem, 2vw, 1.35rem);
+  line-height: 1.45;
+}
+
+.flash-card__when {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--sc-text);
+}
+
 .platform-pill,
 .category-pill,
 .muted-pill,
@@ -1463,23 +1474,27 @@ pre {
 }
 
 .card-viewer__back-content {
+  flex: 1 1 auto;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.card-viewer__back-header {
+.card-viewer__primary {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .card-viewer__back-footer {
-  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 12px;
   border-top: 1px solid var(--sc-border);
-  margin-top: 4px;
+  margin-top: auto;
 }
 
 .card-viewer__controls {
