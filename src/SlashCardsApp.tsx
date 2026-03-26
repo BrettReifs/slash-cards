@@ -447,7 +447,7 @@ export function SlashCardsApp() {
     if (isStandalonePreview || !app || !isConnected) {
       setCommands(COMMANDS);
       setLoadingMessage("");
-      return;
+      return { success: true };
     }
 
     try {
@@ -458,7 +458,7 @@ export function SlashCardsApp() {
           extractTextContent(result.content) ||
             "Unable to refresh built-in commands from the workspace."
         );
-        return;
+        return { success: false };
       }
 
       const nextCommands = extractStructuredCommands(
@@ -471,12 +471,14 @@ export function SlashCardsApp() {
       }
 
       setLoadingMessage("");
+      return { success: true };
     } catch (refreshError) {
       setAppError(
         refreshError instanceof Error
           ? refreshError.message
           : "Unable to refresh built-in commands from the workspace."
       );
+      return { success: false };
     }
   }, [app, isConnected, isStandalonePreview]);
 
