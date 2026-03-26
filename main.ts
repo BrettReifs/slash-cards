@@ -18,9 +18,12 @@ export async function startStreamableHTTPServer(
   createServerInstance: () => McpServer,
 ): Promise<void> {
   const port = parseInt(process.env.PORT ?? "3001", 10);
+  const host = process.env.HOST ?? "127.0.0.1";
+  const corsOrigin =
+    process.env.CORS_ORIGIN ?? `http://${host === "0.0.0.0" ? "localhost" : host}:${port}`;
 
-  const app = createMcpExpressApp({ host: "0.0.0.0" });
-  app.use(cors());
+  const app = createMcpExpressApp({ host });
+  app.use(cors({ origin: corsOrigin }));
 
   // Serve the built UI for browser preview
   app.get("/", (_req: Request, res: Response) => {
@@ -53,13 +56,13 @@ export async function startStreamableHTTPServer(
     }
   });
 
-  const httpServer = app.listen(port, (err) => {
+  const httpServer = app.listen(port, host, (err) => {
     if (err) {
       console.error("Failed to start server:", err);
       process.exit(1);
     }
 
-    console.log(`MCP server listening on http://localhost:${port}/mcp`);
+    console.log(`MCP server listening on http://${host}:${port}/mcp`);
   });
 
   const shutdown = () => {

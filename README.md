@@ -9,7 +9,7 @@ npm install
 npm run build
 npm run serve        # HTTP server at http://localhost:3001/mcp
 # or
-npm run serve --stdio  # stdio transport for MCP clients
+npm run serve -- --stdio  # stdio transport for MCP clients
 ```
 
 ## VS Code
@@ -47,3 +47,34 @@ Add to `claude_desktop_config.json`:
 ## Architecture
 
 Built with the official MCP Apps SDK (`@modelcontextprotocol/ext-apps`) using the Tool + UI Resource pattern. React View bundled as a single HTML file via Vite.
+
+## Testing
+
+```bash
+npm test
+```
+
+Runs an in-memory integration smoke test that starts the MCP server, connects a test client, and verifies tools and tool calls work correctly.
+
+## HTTP Mode — Local Use Only
+
+The HTTP server defaults to `127.0.0.1` (localhost) and is intended for local development only.
+
+To override the bind address or CORS origin, set environment variables:
+
+```bash
+PORT=3001           # HTTP port (default: 3001)
+HOST=127.0.0.1      # Bind address (default: 127.0.0.1)
+CORS_ORIGIN=http://localhost:3001  # Allowed CORS origin (default: derived from HOST/PORT)
+```
+
+> ⚠️ **Do not expose the HTTP server on `0.0.0.0` or a public interface without an auth/proxy layer.** The server has no built-in authentication.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local dev setup, build, and test instructions.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for the vulnerability disclosure process.
+
