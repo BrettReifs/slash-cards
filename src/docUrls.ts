@@ -1,4 +1,5 @@
 import type { SlashCommand } from "./types.js";
+import { PLATFORM_DOC_ROOTS } from "./sourceData.js";
 
 const DOC_URL_ALIASES: Record<string, string> = {
   "https://docs.anthropic.com/en/docs/claude-code/sdk":
@@ -17,17 +18,6 @@ const DOC_URL_ALIASES: Record<string, string> = {
     "https://docs.github.com/en/copilot/reference/chat-cheat-sheet?tool=jetbrains",
   "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/github-copilot-in-your-ide?tool=xcode":
     "https://docs.github.com/en/copilot/reference/chat-cheat-sheet?tool=xcode",
-};
-
-const PLATFORM_DOC_ROOTS: Record<string, string> = {
-  "copilot-vscode": "https://code.visualstudio.com/docs/copilot/reference/copilot-vscode-features",
-  "copilot-cli": "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-command-reference",
-  "copilot-github": "https://docs.github.com/en/copilot/reference/chat-cheat-sheet?tool=webui",
-  "copilot-vs": "https://learn.microsoft.com/en-us/visualstudio/ide/copilot-chat-context?view=vs-2022",
-  "copilot-jetbrains": "https://docs.github.com/en/copilot/reference/chat-cheat-sheet?tool=jetbrains",
-  "copilot-xcode": "https://docs.github.com/en/copilot/reference/chat-cheat-sheet?tool=xcode",
-  "claude-code": "https://code.claude.com/docs/en/commands",
-  "claude-sdk": "https://code.claude.com/docs/en/commands",
 };
 
 function stripFragment(url: string): string {

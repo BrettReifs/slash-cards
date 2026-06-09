@@ -1,6 +1,6 @@
 # Slash Cards
 
-An MCP App that renders interactive flash cards for 145+ slash commands across GitHub Copilot (VS Code, CLI, GitHub.com, Visual Studio, JetBrains, Xcode) and Claude Code (CLI, Agent SDK).
+An MCP App that renders interactive flash cards for 200+ slash commands across GitHub Copilot (VS Code, CLI, GitHub.com, Visual Studio, JetBrains, Xcode) and Claude Code (CLI, Agent SDK).
 
 ## Quick Start
 
@@ -33,7 +33,7 @@ Add to `claude_desktop_config.json`:
 
 ## Features
 
-- 145+ commands across 8 platforms
+- 200+ commands across 8 platforms
 - Gallery-first browser with newest-first, workspace relevance, and alphabetical sorting
 - Filterable command gallery (platform, category, search)
 - Flip cards with command details, examples, documentation links, and new or updated badges
@@ -43,6 +43,32 @@ Add to `claude_desktop_config.json`:
 - Standalone preview mode via `dist/mcp-app.html?preview=1`
 - Text fallback for non-UI hosts
 - Accessible (WCAG AA, keyboard navigation, reduced motion)
+
+## Source freshness audit
+
+Run a deterministic source diff against the official docs before refreshing the catalog:
+
+```bash
+npm run check:sources
+```
+
+The audit fetches the mapped source pages, extracts scoped table/code tokens for slash commands and participants, and compares them with the rendered catalog. It exits with `1` when catalog diffs are found and `2` when a source fetch or parse marker fails. Use `npm run check:sources -- --allow-diffs` for an informational report, or add `--json` for machine-readable output.
+
+## Quality evals
+
+Run the deterministic eval suite before shipping catalog or behavior changes:
+
+```bash
+npm test
+```
+
+The suite covers fixture-backed source parsing, catalog integrity, source scorecards, MCP tool behavior, search and grouping behavior, deterministic study-mode questions, and a built preview artifact smoke check. Use the narrower scripts when iterating:
+
+```bash
+npm run test:unit
+npm run test:mcp
+npm run test:browser
+```
 
 ## Architecture
 
