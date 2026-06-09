@@ -7,20 +7,27 @@ import type {
 } from "../types";
 import { fuzzyMatchScore } from "./fuzzyMatcher";
 
-function shuffle<T>(items: T[]) {
+export type RandomSource = () => number;
+
+function shuffle<T>(items: T[], random: RandomSource) {
   const nextItems = [...items];
 
   for (let index = nextItems.length - 1; index > 0; index -= 1) {
-    const randomIndex = Math.floor(Math.random() * (index + 1));
+    const randomIndex = Math.floor(random() * (index + 1));
     [nextItems[index], nextItems[randomIndex]] = [nextItems[randomIndex], nextItems[index]];
   }
 
   return nextItems;
 }
 
-function sampleUnique(values: string[], count: number, exclude: string) {
+function sampleUnique(
+  values: string[],
+  count: number,
+  exclude: string,
+  random: RandomSource,
+) {
   const uniqueValues = [...new Set(values.filter((value) => value && value !== exclude))];
-  return shuffle(uniqueValues).slice(0, count);
+  return shuffle(uniqueValues, random).slice(0, count);
 }
 
 function getPromptLabel(command: SlashCommand, direction: Exclude<StudyDirection, "mixed">) {
@@ -39,14 +46,15 @@ function getDistractors(
   command: SlashCommand,
   commands: SlashCommand[],
   direction: Exclude<StudyDirection, "mixed">,
-  count: number
+  count: number,
+  random: RandomSource,
 ) {
   const pool = commands
     .filter((candidate) => candidate.id !== command.id)
     .filter((candidate) => candidate.category === command.category || candidate.platform === command.platform)
     .map((candidate) => getPromptAnswer(candidate, direction));
 
-  const distractors = sampleUnique(pool, count, getPromptAnswer(command, direction));
+  const distractors = sampleUnique(pool, count, getPromptAnswer(command, direction), random);
   if (distractors.length >= count) {
     return distractors;
   }
@@ -55,24 +63,38 @@ function getDistractors(
     .filter((candidate) => candidate.id !== command.id)
     .map((candidate) => getPromptAnswer(candidate, direction));
 
-  return [...distractors, ...sampleUnique(fallbackPool, count - distractors.length, getPromptAnswer(command, direction))];
+  return [
+    ...distractors,
+    ...sampleUnique(
+      fallbackPool,
+      count - distractors.length,
+      getPromptAnswer(command, direction),
+      random,
+    ),
+  ];
 }
 
-function resolveDirection(direction: StudyDirection): Exclude<StudyDirection, "mixed"> {
+function resolveDirection(
+  direction: StudyDirection,
+  random: RandomSource,
+): Exclude<StudyDirection, "mixed"> {
   if (direction !== "mixed") {
     return direction;
   }
 
-  return Math.random() > 0.5 ? "command-to-function" : "function-to-command";
+  return random() > 0.5 ? "command-to-function" : "function-to-command";
 }
 
-function resolveDifficulty(difficulty: StudyDifficulty): Exclude<StudyDifficulty, "mixed"> {
+function resolveDifficulty(
+  difficulty: StudyDifficulty,
+  random: RandomSource,
+): Exclude<StudyDifficulty, "mixed"> {
   if (difficulty !== "mixed") {
     return difficulty;
   }
 
   const difficulties: Array<Exclude<StudyDifficulty, "mixed">> = ["easy", "medium", "hard"];
-  return difficulties[Math.floor(Math.random() * difficulties.length)];
+  return difficulties[Math.floor(random() * difficulties.length)] ?? "easy";
 }
 
 function createQuestion(
@@ -80,15 +102,16 @@ function createQuestion(
   commands: SlashCommand[],
   difficulty: StudyDifficulty,
   direction: StudyDirection,
-  index: number
+  index: number,
+  random: RandomSource,
 ): StudyQuestion {
-  const resolvedDirection = resolveDirection(direction);
-  const resolvedDifficulty = resolveDifficulty(difficulty);
+  const resolvedDirection = resolveDirection(direction, random);
+  const resolvedDifficulty = resolveDifficulty(difficulty, random);
   const answer = getPromptAnswer(command, resolvedDirection);
-  const distractors = getDistractors(command, commands, resolvedDirection, 3);
+  const distractors = getDistractors(command, commands, resolvedDirection, 3, random);
 
   if (resolvedDifficulty === "easy") {
-    const isPresentedAnswerCorrect = Math.random() > 0.5 || distractors.length === 0;
+    const isPresentedAnswerCorrect = random() > 0.5 || distractors.length === 0;
     return {
       id: `${command.id}:easy:${resolvedDirection}:${index}`,
       commandId: command.id,
@@ -121,7 +144,7 @@ function createQuestion(
         answer,
         distractors,
       },
-      options: shuffle([answer, ...distractors]).slice(0, 4),
+      options: shuffle([answer, ...distractors], random).slice(0, 4),
     };
   }
 
@@ -141,10 +164,16 @@ function createQuestion(
   };
 }
 
-export function buildStudyQuestions(commands: SlashCommand[], config: StudySessionConfig) {
-  return shuffle(commands)
+export function buildStudyQuestions(
+  commands: SlashCommand[],
+  config: StudySessionConfig,
+  random: RandomSource = Math.random,
+) {
+  return shuffle(commands, random)
     .slice(0, Math.min(config.questionCount, commands.length))
-    .map((command, index) => createQuestion(command, commands, config.difficulty, config.direction, index));
+    .map((command, index) =>
+      createQuestion(command, commands, config.difficulty, config.direction, index, random),
+    );
 }
 
 export function scoreStudyAnswer(question: StudyQuestion, answer: string) {

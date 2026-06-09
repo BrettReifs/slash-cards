@@ -1,3 +1,5 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { COMMANDS } from "../src/commands.js";
 import {
   COMMAND_SOURCES,
@@ -17,7 +19,7 @@ type Args = {
   json: boolean;
 };
 
-type SourceToken = {
+export type SourceToken = {
   token: string;
   normalized: string;
   platform: string;
@@ -26,22 +28,35 @@ type SourceToken = {
   scopeId: string;
 };
 
-type SourceResult = {
+export type SourceResult = {
   source: CommandSourceDefinition;
   tokens: SourceToken[];
   fetchedBytes: number;
 };
 
-type DiffGroup = {
+export type DiffGroup = {
   platform: string;
   kind: SourceCapabilityKind;
   sourceCount: number;
   catalogCount: number;
+  aliasCovered: SourceToken[];
   missingLocally: SourceToken[];
   staleLocally: SlashCommand[];
 };
 
-class SourceAuditError extends Error {
+export type ScorecardGroup = {
+  platform: string;
+  kind: SourceCapabilityKind;
+  sourceCount: number;
+  catalogCount: number;
+  aliasCoveredCount: number;
+  missingCount: number;
+  staleCount: number;
+  coveragePercent: number;
+  status: "ok" | "diff";
+};
+
+export class SourceAuditError extends Error {
   constructor(message: string) {
     super(message);
     this.name = "SourceAuditError";
@@ -86,7 +101,11 @@ function formatKey(platform: string, kind: SourceCapabilityKind): string {
   return `${platform}::${kind}`;
 }
 
-function getSourceSlice(source: CommandSourceDefinition, scope: SourceScope, html: string): string {
+export function getSourceSlice(
+  source: CommandSourceDefinition,
+  scope: SourceScope,
+  html: string,
+): string {
   const startIndex = html.indexOf(scope.range.start);
   if (startIndex < 0) {
     throw new SourceAuditError(
@@ -165,7 +184,7 @@ function tokenFromValue(value: string, prefixes: SourceTokenPrefix[]): string | 
   return match?.[1] ?? null;
 }
 
-function extractScopeTokens(
+export function extractScopeTokens(
   source: CommandSourceDefinition,
   scope: SourceScope,
   html: string,
@@ -238,7 +257,7 @@ async function fetchWithTimeout(url: string): Promise<string> {
   }
 }
 
-async function auditSources(): Promise<SourceResult[]> {
+export async function auditSources(): Promise<SourceResult[]> {
   const cache = new Map<string, string>();
   const results: SourceResult[] = [];
 
@@ -293,9 +312,13 @@ function appendToMapList<TKey, TValue>(map: Map<TKey, TValue[]>, key: TKey, valu
   }
 }
 
-function buildDiffs(sourceResults: SourceResult[]): DiffGroup[] {
+export function buildDiffs(
+  sourceResults: SourceResult[],
+  commands: SlashCommand[] = COMMANDS,
+): DiffGroup[] {
   const sourceTokensByGroup = new Map<string, Map<string, SourceToken>>();
   const localCommandsByGroup = new Map<string, SlashCommand[]>();
+  const localPrimaryByGroup = new Map<string, Set<string>>();
   const localCoverageByGroup = new Map<string, Set<string>>();
 
   for (const result of sourceResults) {
@@ -307,7 +330,7 @@ function buildDiffs(sourceResults: SourceResult[]): DiffGroup[] {
     }
   }
 
-  for (const command of COMMANDS) {
+  for (const command of commands) {
     const kind = getLocalKind(command);
     if (!kind) {
       continue;
@@ -315,6 +338,10 @@ function buildDiffs(sourceResults: SourceResult[]): DiffGroup[] {
 
     const key = formatKey(command.platform, kind);
     appendToMapList(localCommandsByGroup, key, command);
+
+    const primary = localPrimaryByGroup.get(key) ?? new Set<string>();
+    primary.add(normalizeToken(command.command));
+    localPrimaryByGroup.set(key, primary);
 
     const coverage = localCoverageByGroup.get(key) ?? new Set<string>();
     for (const token of localCoverageTokens(command)) {
@@ -331,7 +358,12 @@ function buildDiffs(sourceResults: SourceResult[]): DiffGroup[] {
     const [platform, kind] = key.split("::") as [string, SourceCapabilityKind];
     const sourceTokens = sourceTokensByGroup.get(key) ?? new Map<string, SourceToken>();
     const localCommands = localCommandsByGroup.get(key) ?? [];
+    const localPrimary = localPrimaryByGroup.get(key) ?? new Set<string>();
     const localCoverage = localCoverageByGroup.get(key) ?? new Set<string>();
+    const aliasCovered = [...sourceTokens.values()]
+      .filter((token) => !localPrimary.has(token.normalized))
+      .filter((token) => localCoverage.has(token.normalized))
+      .sort(compareSourceTokens);
     const missingLocally = [...sourceTokens.values()]
       .filter((token) => !localCoverage.has(token.normalized))
       .sort(compareSourceTokens);
@@ -347,8 +379,31 @@ function buildDiffs(sourceResults: SourceResult[]): DiffGroup[] {
       kind,
       sourceCount: sourceTokens.size,
       catalogCount: localCommands.length,
+      aliasCovered,
       missingLocally,
       staleLocally,
+    };
+  });
+}
+
+export function buildScorecard(diffs: DiffGroup[]): ScorecardGroup[] {
+  return diffs.map((diff) => {
+    const coveredCount = diff.sourceCount - diff.missingLocally.length;
+    const coveragePercent =
+      diff.sourceCount === 0 ? 0 : Number(((coveredCount / diff.sourceCount) * 100).toFixed(2));
+    const status =
+      diff.missingLocally.length === 0 && diff.staleLocally.length === 0 ? "ok" : "diff";
+
+    return {
+      platform: diff.platform,
+      kind: diff.kind,
+      sourceCount: diff.sourceCount,
+      catalogCount: diff.catalogCount,
+      aliasCoveredCount: diff.aliasCovered.length,
+      missingCount: diff.missingLocally.length,
+      staleCount: diff.staleLocally.length,
+      coveragePercent,
+      status,
     };
   });
 }
@@ -371,7 +426,11 @@ function formatCommandList(commands: SlashCommand[]): string {
   return commands.map((command) => command.command).join(", ");
 }
 
-function writeTextReport(sourceResults: SourceResult[], diffs: DiffGroup[]): void {
+function writeTextReport(
+  sourceResults: SourceResult[],
+  diffs: DiffGroup[],
+  scorecard: ScorecardGroup[],
+): void {
   const totalTokens = sourceResults.reduce((sum, result) => sum + result.tokens.length, 0);
   console.log(
     `Source audit fetched ${sourceResults.length} source definitions and extracted ${totalTokens} scoped tokens.`,
@@ -380,6 +439,16 @@ function writeTextReport(sourceResults: SourceResult[], diffs: DiffGroup[]): voi
   for (const result of sourceResults) {
     console.log(
       `- ${result.source.id}: ${result.tokens.length} tokens (${result.fetchedBytes.toLocaleString()} bytes)`,
+    );
+  }
+
+  console.log("");
+
+  console.log("Quality scorecard:");
+  for (const score of scorecard) {
+    const label = PLATFORM_LABELS[score.platform] ?? score.platform;
+    console.log(
+      `- ${label} ${score.kind}: ${score.coveragePercent}% coverage, ${score.aliasCoveredCount} alias-covered, ${score.missingCount} missing, ${score.staleCount} stale`,
     );
   }
 
@@ -402,7 +471,11 @@ function writeTextReport(sourceResults: SourceResult[], diffs: DiffGroup[]): voi
   }
 }
 
-function writeJsonReport(sourceResults: SourceResult[], diffs: DiffGroup[]): void {
+function writeJsonReport(
+  sourceResults: SourceResult[],
+  diffs: DiffGroup[],
+  scorecard: ScorecardGroup[],
+): void {
   console.log(
     JSON.stringify(
       {
@@ -419,11 +492,17 @@ function writeJsonReport(sourceResults: SourceResult[], diffs: DiffGroup[]): voi
             scopeId: token.scopeId,
           })),
         })),
+        scorecard,
         diffs: diffs.map((diff) => ({
           platform: diff.platform,
           kind: diff.kind,
           sourceCount: diff.sourceCount,
           catalogCount: diff.catalogCount,
+          aliasCovered: diff.aliasCovered.map((token) => ({
+            token: token.token,
+            sourceId: token.sourceId,
+            scopeId: token.scopeId,
+          })),
           missingLocally: diff.missingLocally.map((token) => ({
             token: token.token,
             sourceId: token.sourceId,
@@ -442,17 +521,18 @@ function writeJsonReport(sourceResults: SourceResult[], diffs: DiffGroup[]): voi
   );
 }
 
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
 
   try {
     const sourceResults = await auditSources();
     const diffs = buildDiffs(sourceResults);
+    const scorecard = buildScorecard(diffs);
 
     if (args.json) {
-      writeJsonReport(sourceResults, diffs);
+      writeJsonReport(sourceResults, diffs, scorecard);
     } else {
-      writeTextReport(sourceResults, diffs);
+      writeTextReport(sourceResults, diffs, scorecard);
     }
 
     if (hasDiffs(diffs) && !args.allowDiffs) {
@@ -469,4 +549,10 @@ async function main(): Promise<void> {
   }
 }
 
-void main();
+const isDirectRun =
+  process.argv[1] !== undefined &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isDirectRun) {
+  void main();
+}

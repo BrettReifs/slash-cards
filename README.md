@@ -54,6 +54,22 @@ npm run check:sources
 
 The audit fetches the mapped source pages, extracts scoped table/code tokens for slash commands and participants, and compares them with the rendered catalog. It exits with `1` when catalog diffs are found and `2` when a source fetch or parse marker fails. Use `npm run check:sources -- --allow-diffs` for an informational report, or add `--json` for machine-readable output.
 
+## Quality evals
+
+Run the deterministic eval suite before shipping catalog or behavior changes:
+
+```bash
+npm test
+```
+
+The suite covers fixture-backed source parsing, catalog integrity, source scorecards, MCP tool behavior, search and grouping behavior, deterministic study-mode questions, and a built preview artifact smoke check. Use the narrower scripts when iterating:
+
+```bash
+npm run test:unit
+npm run test:mcp
+npm run test:browser
+```
+
 ## Architecture
 
 Built with the official MCP Apps SDK (`@modelcontextprotocol/ext-apps`) using the Tool + UI Resource pattern. React View bundled as a single HTML file via Vite.

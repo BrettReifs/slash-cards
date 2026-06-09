@@ -218,13 +218,23 @@ export function groupByCommand(
   const groups: CommandGroup[] = [];
 
   for (const entries of map.values()) {
-    const platforms = [...new Set(entries.map((entry) => entry.platform))];
-    const isAvailable = entries.some((entry) => entry.platform === sessionPlatform);
+    const orderedEntries = [...entries].sort((left, right) => {
+      const sessionDelta =
+        Number(right.platform === sessionPlatform) - Number(left.platform === sessionPlatform);
+      if (sessionDelta !== 0) return sessionDelta;
+
+      const weightDelta = (right.workspaceWeight ?? 0) - (left.workspaceWeight ?? 0);
+      if (weightDelta !== 0) return weightDelta;
+
+      return (right.catalogIndex ?? 0) - (left.catalogIndex ?? 0);
+    });
+    const platforms = [...new Set(orderedEntries.map((entry) => entry.platform))];
+    const isAvailable = orderedEntries.some((entry) => entry.platform === sessionPlatform);
 
     groups.push({
-      command: entries[0].command,
-      topEntry: entries[0],
-      entries,
+      command: orderedEntries[0]?.command ?? entries[0].command,
+      topEntry: orderedEntries[0] ?? entries[0],
+      entries: orderedEntries,
       platforms,
       isAvailableInSession: isAvailable,
     });

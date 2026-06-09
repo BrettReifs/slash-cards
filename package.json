@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:evals",
+    "test:unit": "node --import tsx --test tests\\source-audit.test.ts tests\\catalog-integrity.test.ts tests\\search-ranking.test.ts tests\\study-mode.test.ts",
+    "test:mcp": "node --import tsx --test tests\\mcp.test.ts",
+    "test:browser": "npm run build && node --import tsx --test tests\\browser-smoke.test.ts",
+    "test:evals": "npm run test:unit && npm run test:mcp && npm run test:browser",
     "build": "tsc --noEmit && tsc -p tsconfig.server.json && cross-env INPUT=mcp-app.html vite build",
     "check:sources": "tsx scripts/check-source-diffs.ts",
     "start": "concurrently --raw \"cross-env NODE_ENV=development INPUT=mcp-app.html vite build --watch\" \"tsx watch main.ts\"",

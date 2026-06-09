@@ -16,5 +16,5 @@
     "noFallthroughCasesInSwitch": true,
     "jsx": "react-jsx"
   },
-  "include": ["src", "scripts", "server.ts", "main.ts"]
+  "include": ["src", "scripts", "tests", "server.ts", "main.ts"]
 }
