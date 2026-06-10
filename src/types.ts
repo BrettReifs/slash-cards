@@ -1,3 +1,5 @@
+import type React from "react";
+
 export type Platform =
   | "copilot-vscode"
   | "copilot-cli"
@@ -45,6 +47,16 @@ export interface SlashCommand {
   isNew?: boolean;
   isRecentlyUpdated?: boolean;
   catalogIndex?: number;
+  visualId?: string;
+}
+
+export type CardVisualSurface = "gallery" | "study-front" | "overlay";
+
+export interface CardVisualEntry {
+  component: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  alt: string;
+  sceneBrief: string;
+  metaphorFamily: string;
 }
 
 export type SlashCardsSort =

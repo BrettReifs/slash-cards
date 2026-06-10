@@ -150,6 +150,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["copilot-vs--fix", "copilot-jetbrains--fix", "copilot-xcode--fix"],
     docUrl: "https://code.visualstudio.com/docs/copilot/reference/copilot-vscode-features#_slash-commands",
     tags: ["slash-command", "copilot-vscode", "code-action", "fix", "repair"],
+    visualId: "fix",
   },
   {
     id: "copilot-vscode--tests",
@@ -202,6 +203,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["copilot-cli--compact", "claude-code--compact", "claude-sdk--compact"],
     docUrl: "https://code.visualstudio.com/docs/copilot/reference/copilot-vscode-features#_slash-commands",
     tags: ["slash-command", "copilot-vscode", "session", "compact", "summarization"],
+    visualId: "compact",
   },
   {
     id: "copilot-vscode--fork",
@@ -241,6 +243,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: [],
     docUrl: "https://code.visualstudio.com/docs/copilot/reference/copilot-vscode-features#_slash-commands",
     tags: ["slash-command", "copilot-vscode", "scaffolding", "new", "generator"],
+    visualId: "new-scaffold",
   },
   {
     id: "copilot-vscode--new-notebook",
@@ -449,6 +452,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["copilot-cli--allow-all", "claude-code--permissions"],
     docUrl: "https://code.visualstudio.com/docs/copilot/reference/copilot-vscode-features#_slash-commands",
     tags: ["slash-command", "copilot-vscode", "permissions", "yolo", "auto-approval"],
+    visualId: "yolo",
   },
   {
     id: "copilot-vscode--disable-yolo",
@@ -488,6 +492,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["copilot-vscode--compact", "claude-code--compact", "claude-sdk--compact"],
     docUrl: "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/github-copilot-in-the-cli/using-github-copilot-in-the-cli",
     tags: ["slash-command", "copilot-cli", "session", "compact", "summarization"],
+    visualId: "compact",
   },
   {
     id: "copilot-cli--context",
@@ -592,6 +597,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["claude-code--model", "claude-sdk--model"],
     docUrl: "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/github-copilot-in-the-cli/using-github-copilot-in-the-cli",
     tags: ["slash-command", "copilot-cli", "config", "model", "models"],
+    visualId: "model",
   },
   {
     id: "copilot-cli--theme",
@@ -956,6 +962,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["copilot-vscode--clear", "copilot-cli--clear", "copilot-github--clear", "claude-code--clear", "claude-sdk--clear"],
     docUrl: "https://docs.github.com/en/copilot/how-tos/use-chat/use-github-copilot-chat-in-githubcom",
     tags: ["slash-command", "copilot-github", "session", "new", "conversation"],
+    visualId: "new-fresh-chat",
   },
   {
     id: "copilot-github--rename",
@@ -1008,6 +1015,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["copilot-vscode--fix", "copilot-jetbrains--fix", "copilot-xcode--fix"],
     docUrl: "https://learn.microsoft.com/en-us/visualstudio/ide/copilot-chat-context?view=vs-2022",
     tags: ["slash-command", "copilot-vs", "code-action", "fix", "repair"],
+    visualId: "fix",
   },
   {
     id: "copilot-vs--help",
@@ -1073,6 +1081,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["copilot-vscode--fix", "copilot-vs--fix", "copilot-xcode--fix"],
     docUrl: "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/github-copilot-in-your-ide?tool=jetbrains",
     tags: ["slash-command", "copilot-jetbrains", "code-action", "fix", "repair"],
+    visualId: "fix",
   },
   {
     id: "copilot-jetbrains--help",
@@ -1138,6 +1147,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["copilot-vscode--fix", "copilot-vs--fix", "copilot-jetbrains--fix"],
     docUrl: "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/github-copilot-in-your-ide?tool=xcode",
     tags: ["slash-command", "copilot-xcode", "code-action", "fix", "repair"],
+    visualId: "fix",
   },
   {
     id: "copilot-xcode--simplify",
@@ -1190,6 +1200,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["copilot-vscode--compact", "copilot-cli--compact", "claude-sdk--compact"],
     docUrl: "https://docs.anthropic.com/en/docs/claude-code/slash-commands",
     tags: ["slash-command", "claude-code", "session", "compact", "summarization"],
+    visualId: "compact",
   },
   {
     id: "claude-code--context",
@@ -1333,6 +1344,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["copilot-cli--model", "claude-sdk--model"],
     docUrl: "https://docs.anthropic.com/en/docs/claude-code/slash-commands",
     tags: ["slash-command", "claude-code", "config", "model", "models"],
+    visualId: "model",
   },
   {
     id: "claude-code--effort",
@@ -1957,6 +1969,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["copilot-vscode--compact", "copilot-cli--compact", "claude-code--compact"],
     docUrl: "https://docs.anthropic.com/en/docs/claude-code/sdk",
     tags: ["slash-command", "claude-sdk", "session", "compact", "programmatic", "mirrors-claude-code"],
+    visualId: "compact",
   },
   {
     id: "claude-sdk--clear",
@@ -1983,6 +1996,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: ["copilot-cli--model", "claude-code--model"],
     docUrl: "https://docs.anthropic.com/en/docs/claude-code/sdk",
     tags: ["slash-command", "claude-sdk", "config", "model", "programmatic", "mirrors-claude-code"],
+    visualId: "model",
   },
   {
     id: "claude-sdk--plan",
@@ -2011,6 +2025,7 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: [],
     docUrl: "https://code.visualstudio.com/docs/copilot/reference/copilot-vscode-features#_workspace",
     tags: ["participant", "copilot-vscode", "code-action", "workspace", "project-wide"],
+    visualId: "workspace",
   },
   {
     id: "copilot-vscode-@terminal",
@@ -2050,6 +2065,22 @@ const RAW_COMMANDS: SlashCommand[] = [
     equivalents: [],
     docUrl: "https://code.visualstudio.com/docs/copilot/reference/copilot-vscode-features#_github",
     tags: ["participant", "copilot-vscode", "integration", "github", "search", "issues", "prs"],
+  },
+
+  // ── Individual Skills ─────────────────────────────────────────────────
+  {
+    id: "copilot-cli--skill-diagnose",
+    command: "diagnose",
+    platform: "copilot-cli",
+    category: "code-action",
+    description: "Disciplined diagnosis loop for hard bugs and performance regressions",
+    aliases: [],
+    whenToUse: "Use this when a bug or regression is hard to reproduce or root-cause. The skill runs reproduce → minimise → hypothesise → instrument → fix → regression-test steps.",
+    example: "diagnose: app crashes on startup after upgrading to React 19",
+    equivalents: [],
+    docUrl: "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/github-copilot-in-the-cli/using-github-copilot-in-the-cli",
+    tags: ["skill", "copilot-cli", "code-action", "diagnose", "debugging", "regression"],
+    visualId: "diagnose",
   },
 ];
 

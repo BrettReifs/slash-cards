@@ -1,5 +1,6 @@
 import type { KeyboardEvent } from "react";
 import type { SlashCommand } from "./types";
+import { CardVisual } from "./visuals/CardVisual";
 
 interface FlashCardProps {
   command: SlashCommand;
@@ -39,6 +40,14 @@ export function FlashCard({
       onKeyDown={handleKeyDown}
     >
       <article className="flash-card__face flash-card__face--front">
+        {command.visualId ? (
+          <CardVisual
+            visualId={command.visualId}
+            surface="gallery"
+            label={command.command}
+          />
+        ) : null}
+
         {isAvailableInSession ? (
           <span className="flash-card__session-dot" aria-label="Available in this session" />
         ) : null}
@@ -48,11 +57,13 @@ export function FlashCard({
           </span>
         ) : null}
 
-        <div className="flash-card__front-copy flash-card__front-copy--hero">
-          <span className="flash-card__command flash-card__command--hero">
-            {command.command}
-          </span>
-        </div>
+        {!command.visualId ? (
+          <div className="flash-card__front-copy flash-card__front-copy--hero">
+            <span className="flash-card__command flash-card__command--hero">
+              {command.command}
+            </span>
+          </div>
+        ) : null}
       </article>
     </div>
   );

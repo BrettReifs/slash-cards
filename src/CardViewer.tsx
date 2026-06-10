@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { SlashCommand } from "./types";
 import { PLATFORM_LABELS } from "./types";
+import { CardVisual } from "./visuals/CardVisual";
 
 type PlatformTone = "copilot" | "claude" | "neutral";
 
@@ -83,9 +84,17 @@ export function CardViewer({ cards, onFinish, onOpenDocs }: CardViewerProps) {
         >
           <div className="card-viewer__inner">
             <article className="card-viewer__face card-viewer__face--front">
-              <div className="card-viewer__front-content">
-                <span className="card-viewer__command">{card.command}</span>
-              </div>
+              {card.visualId ? (
+                <CardVisual
+                  visualId={card.visualId}
+                  surface="study-front"
+                  label={card.command}
+                />
+              ) : (
+                <div className="card-viewer__front-content">
+                  <span className="card-viewer__command">{card.command}</span>
+                </div>
+              )}
               <p className="card-viewer__hint">Use arrow-keys or click to flip</p>
             </article>
 
