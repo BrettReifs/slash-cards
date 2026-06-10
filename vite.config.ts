@@ -1,8 +1,10 @@
 import { createLogger, defineConfig } from "vite";
 import { viteSingleFile } from "vite-plugin-singlefile";
+import react from "@vitejs/plugin-react";
 
 const INPUT = process.env.INPUT || "mcp-app.html";
 const isDevelopment = process.env.NODE_ENV === "development";
+const isTest = process.env.VITEST === "true";
 
 const prefixedLogger = createLogger();
 for (const level of ["info", "warn", "error"] as const) {
@@ -12,8 +14,8 @@ for (const level of ["info", "warn", "error"] as const) {
 }
 
 export default defineConfig({
-  customLogger: prefixedLogger,
-  plugins: [viteSingleFile()],
+  customLogger: isTest ? undefined : prefixedLogger,
+  plugins: isTest ? [react()] : [viteSingleFile()],
   build: {
     sourcemap: isDevelopment ? "inline" : undefined,
     cssMinify: !isDevelopment,
@@ -21,5 +23,12 @@ export default defineConfig({
     rollupOptions: { input: INPUT },
     outDir: "dist",
     emptyOutDir: false,
+  },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./src/test-setup.ts"],
+    include: ["src/**/*.test.{ts,tsx}"],
+    css: false,
   },
 });

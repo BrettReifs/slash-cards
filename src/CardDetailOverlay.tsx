@@ -2,6 +2,7 @@ import { useEffect, useRef, useMemo } from "react";
 import type { KeyboardEvent } from "react";
 import type { CommandGroup } from "./types";
 import { PLATFORM_LABELS } from "./types";
+import { CardVisual } from "./visuals/CardVisual";
 
 type PlatformTone = "copilot" | "claude" | "neutral";
 
@@ -131,6 +132,12 @@ export function CardDetailOverlay({
                 {command.command}
               </span>
             </div>
+            {command.visualId ? (
+              <CardVisual
+                visualId={command.visualId}
+                surface="overlay"
+              />
+            ) : null}
             <p className="flash-card__description">
               <strong>{command.description}</strong>
             </p>
